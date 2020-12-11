@@ -7,6 +7,7 @@
 #include "frame_fileindex.h"
 #include "frame_compare.h"
 #include "frame_home.h"
+#include "frame_receive.h"
 
 enum
 {
@@ -17,7 +18,8 @@ enum
     kKeySDFile,
     kKeyCompare,
     kKeyHome,
-    kKeyLifeGame
+    kKeyLifeGame,
+    kKeyReceive
 };
 
 #define KEY_W 92
@@ -114,6 +116,17 @@ void key_home_cb(epdgui_args_vector_t &args)
     *((int*)(args[0])) = 0;
 }
 
+void key_receive_cb(epdgui_args_vector_t &args)
+{
+    Frame_Base *frame = EPDGUI_GetFrame("Frame_Receive");
+    if(frame == NULL)
+    {
+        frame = new Frame_Receive();
+        EPDGUI_AddFrame("Frame_Receive", frame);
+    }
+    EPDGUI_PushFrame(frame);
+    *((int*)(args[0])) = 0;
+}
 
 Frame_Main::Frame_Main(void): Frame_Base(false)
 {
@@ -136,6 +149,11 @@ Frame_Main::Frame_Main(void): Frame_Base(false)
     for(int i = 0; i < 4; i++)
     {
         _key[i + 4] = new EPDGUI_Button("测试", 20 + i * 136, 240, KEY_W, KEY_H);
+    }
+
+    for(int i = 0; i < 1; i++)
+    {
+        _key[i + 8] = new EPDGUI_Button("测试", 20 + i * 136, 390, KEY_W, KEY_H);
     }
 
     _key[kKeySetting]->CanvasNormal()->pushImage(0, 0, 92, 92, ImageResource_main_icon_setting_92x92);
@@ -186,6 +204,12 @@ Frame_Main::Frame_Main(void): Frame_Base(false)
     _key[kKeyHome]->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void*)(&_is_run));
     _key[kKeyHome]->Bind(EPDGUI_Button::EVENT_RELEASED, key_home_cb);
 
+    _key[kKeyReceive]->CanvasNormal()->pushImage(0, 0, 92, 92, ImageResource_main_icon_home_92x92);
+    *(_key[kKeyReceive]->CanvasPressed()) = *(_key[kKeyReceive]->CanvasNormal());
+    _key[kKeyReceive]->CanvasPressed()->ReverseColor();
+    _key[kKeyReceive]->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void*)(&_is_run));
+    _key[kKeyReceive]->Bind(EPDGUI_Button::EVENT_RELEASED, key_receive_cb);
+
     _time = 0;
     _next_update_time = 0;
 }
@@ -193,7 +217,7 @@ Frame_Main::Frame_Main(void): Frame_Base(false)
 
 Frame_Main::~Frame_Main(void)
 {
-    for(int i = 0; i < 8; i++)
+    for(int i = 0; i < ICON_NUM; i++)
     {
         delete _key[i];
     }
@@ -252,6 +276,10 @@ void Frame_Main::AppName(m5epd_update_mode_t mode)
         _names->drawString("LifeGame", 20 + 46 + 3 * 136, 16);
     }
     _names->pushCanvas(0, 337, mode);
+
+    _names->fillCanvas(0);
+    _names->drawString("Receive", 20 + 46, 16);
+    _names->pushCanvas(0, 480, mode);
 }
 
 void Frame_Main::StatusBar(m5epd_update_mode_t mode)
@@ -313,7 +341,7 @@ int Frame_Main::init(epdgui_args_vector_t &args)
 {
     _is_run = 1;
     M5.EPD.WriteFullGram4bpp(GetWallpaper());
-    for(int i = 0; i < 8; i++)
+    for(int i = 0; i < ICON_NUM; i++)
     {
         EPDGUI_AddObject(_key[i]);
     }

@@ -1,6 +1,7 @@
 #ifndef _FRAME_MAIN_H_
 #define _FRAME_MAIN_H_
 
+#define ICON_NUM 9
 #include "frame_base.h"
 
 class Frame_Main : public Frame_Base
@@ -14,7 +15,7 @@ public:
     void AppName(m5epd_update_mode_t mode);
 
 private:
-    EPDGUI_Button *_key[8];
+    EPDGUI_Button *_key[ICON_NUM];
     M5EPD_Canvas *_bar;
     M5EPD_Canvas *_names;
     uint32_t _next_update_time;

@@ -15,5 +15,6 @@
 #include "frame_compare.h"
 #include "frame_pictureviewer.h"
 #include "frame_home.h"
+#include "frame_receive.h"
 
 #endif
