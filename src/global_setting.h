@@ -3,7 +3,8 @@
 
 #include <M5EPD.h>
 #include <nvs.h>
-
+#include <ArduinoJson.h>
+#include <SD.h>
 
 #define WALLPAPER_NUM 3
 
@@ -45,5 +46,8 @@ void SetTTFLoaded(uint8_t val);
 uint8_t isTTFLoaded(void);
 void SetInitStatus(uint8_t idx, uint8_t val);
 uint8_t GetInitStatus(uint8_t idx);
+
+void getDJD(DynamicJsonDocument &doc);
+void writeDJD(DynamicJsonDocument &doc);
 
 #endif //_GLOBAL_SETTING_H_

@@ -1,7 +1,7 @@
 #ifndef _FRAME_MAIN_H_
 #define _FRAME_MAIN_H_
 
-#define ICON_NUM 9
+#define ICON_NUM 10
 #include "frame_base.h"
 
 class Frame_Main : public Frame_Base

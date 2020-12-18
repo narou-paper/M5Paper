@@ -16,5 +16,6 @@
 #include "frame_pictureviewer.h"
 #include "frame_home.h"
 #include "frame_receive.h"
+#include "frame_novellist.h"
 
 #endif

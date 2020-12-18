@@ -313,3 +313,26 @@ void LoadingAnime_32x32_Stop()
     xSemaphoreGive(_xSemaphore_LoadingAnime);
     delay(200);
 }
+
+const char *config_file_path = "/config.json";
+
+void getDJD(DynamicJsonDocument &doc)
+{
+  File file;
+  file = SD.open(config_file_path, "r");
+  DeserializationError error = deserializeJson(doc, file);
+  if (error)
+    Serial.println(F("Failed to read file, using default configuration"));
+  file.close();
+}
+
+void writeDJD(DynamicJsonDocument &doc)
+{
+  File file = SD.open(config_file_path, "w");
+  serializeJsonPretty(doc, Serial); // ただの表示
+  size_t error = serializeJson(doc, file);
+  if (error == 0)
+    Serial.println("error1");
+    SPIFFS.begin();
+  file.close();
+}

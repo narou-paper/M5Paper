@@ -8,6 +8,7 @@
 #include "frame_compare.h"
 #include "frame_home.h"
 #include "frame_receive.h"
+#include "frame_novellist.h"
 
 enum
 {
@@ -19,7 +20,8 @@ enum
     kKeyCompare,
     kKeyHome,
     kKeyLifeGame,
-    kKeyReceive
+    kKeyReceive,
+    kKeyNovelList
 };
 
 #define KEY_W 92
@@ -128,6 +130,14 @@ void key_receive_cb(epdgui_args_vector_t &args)
     *((int*)(args[0])) = 0;
 }
 
+void key_novellist_cb(epdgui_args_vector_t &args)
+{
+    Frame_Base *frame = EPDGUI_GetFrame("Frame_NovelList");
+    frame = new Frame_NovelList("");
+    EPDGUI_PushFrame(frame);
+    *((int*)(args[0])) = 0;
+}
+
 Frame_Main::Frame_Main(void): Frame_Base(false)
 {
     _frame_name = "Frame_Main";
@@ -151,7 +161,7 @@ Frame_Main::Frame_Main(void): Frame_Base(false)
         _key[i + 4] = new EPDGUI_Button("测试", 20 + i * 136, 240, KEY_W, KEY_H);
     }
 
-    for(int i = 0; i < 1; i++)
+    for(int i = 0; i < 2; i++)
     {
         _key[i + 8] = new EPDGUI_Button("测试", 20 + i * 136, 390, KEY_W, KEY_H);
     }
@@ -209,6 +219,12 @@ Frame_Main::Frame_Main(void): Frame_Base(false)
     _key[kKeyReceive]->CanvasPressed()->ReverseColor();
     _key[kKeyReceive]->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void*)(&_is_run));
     _key[kKeyReceive]->Bind(EPDGUI_Button::EVENT_RELEASED, key_receive_cb);
+
+    _key[kKeyNovelList]->CanvasNormal()->pushImage(0, 0, 92, 92, ImageResource_main_icon_home_92x92);
+    *(_key[kKeyNovelList]->CanvasPressed()) = *(_key[kKeyNovelList]->CanvasNormal());
+    _key[kKeyNovelList]->CanvasPressed()->ReverseColor();
+    _key[kKeyNovelList]->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void*)(&_is_run));
+    _key[kKeyNovelList]->Bind(EPDGUI_Button::EVENT_RELEASED, key_novellist_cb);
 
     _time = 0;
     _next_update_time = 0;
@@ -279,6 +295,7 @@ void Frame_Main::AppName(m5epd_update_mode_t mode)
 
     _names->fillCanvas(0);
     _names->drawString("Receive", 20 + 46, 16);
+    _names->drawString("Novel List", 20 + 46 + 136, 16);
     _names->pushCanvas(0, 480, mode);
 }
 

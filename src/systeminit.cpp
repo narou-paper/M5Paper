@@ -51,7 +51,7 @@ void SysInit_Start(void)
     disableCore0WDT();
     xTaskCreatePinnedToCore(SysInit_Loading, "SysInit_Loading", 4096, NULL, 1, NULL, 0);
 
-    // SysInit_UpdateInfo("Initializing SPIFFS card...");
+    // SysInit_UpdateInfo("Initializing SPIFFS...");
     SPIFFS.begin();
 
     // SysInit_UpdateInfo("Initializing SD card...");
@@ -135,25 +135,25 @@ void SysInit_Start(void)
         Frame_Receive *frame_receive = new Frame_Receive();
         EPDGUI_AddFrame("Frame_Receive", frame_receive);
 
-        if(isWiFiConfiged())
-        {
-            SysInit_UpdateInfo("Connect to " + GetWifiSSID() + "...");
-            WiFi.begin(GetWifiSSID().c_str(), GetWifiPassword().c_str());
-            uint32_t t = millis();
-            while (1)
-            {
-                if(millis() - t > 8000)
-                {
-                    break;
-                }
+        // if(isWiFiConfiged())
+        // {
+        //     SysInit_UpdateInfo("Connect to " + GetWifiSSID() + "...");
+        //     WiFi.begin(GetWifiSSID().c_str(), GetWifiPassword().c_str());
+        //     uint32_t t = millis();
+        //     while (1)
+        //     {
+        //         if(millis() - t > 8000)
+        //         {
+        //             break;
+        //         }
 
-                if(WiFi.status() == WL_CONNECTED)
-                {
-                    frame_wifiscan->SetConnected(GetWifiSSID(), WiFi.RSSI());
-                    break;
-                }
-            }
-        }
+        //         if(WiFi.status() == WL_CONNECTED)
+        //         {
+        //             frame_wifiscan->SetConnected(GetWifiSSID(), WiFi.RSSI());
+        //             break;
+        //         }
+        //     }
+        // }
     }
     
     log_d("done");

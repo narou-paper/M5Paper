@@ -9,7 +9,6 @@
 const char *ssid = "Narou-Paper";
 const char *password = "mokemoke";
 const char *host = "narou";
-const char *config_file_path = "/config.json";
 
 WebServer _web_server(80);
 File fsUploadFile;
@@ -107,27 +106,6 @@ bool exists(String path)
   return yes;
 }
 
-void getDJD(DynamicJsonDocument &doc)
-{
-  File file;
-  file = SD.open(config_file_path, "r");
-  DeserializationError error = deserializeJson(doc, file);
-  if (error)
-    Serial.println(F("Failed to read file, using default configuration"));
-  file.close();
-}
-
-void writeDJD(DynamicJsonDocument &doc)
-{
-  File file = SD.open(config_file_path, "w");
-  serializeJsonPretty(doc, Serial); // ただの表示
-  size_t error = serializeJson(doc, file);
-  if (error == 0)
-    Serial.println("error1");
-    SPIFFS.begin();
-  file.close();
-}
-
 void editConfigRemoveEpisode(String title, String episode)
 {
   DynamicJsonDocument doc(2048);
@@ -195,7 +173,7 @@ void webOpen()
     MDNS.begin(host);
     Serial.print("Open http://");
     Serial.print(host);
-    Serial.println(".local/edit to see the file browser");
+    Serial.println(".local/");
 
     _web_server.begin();
     xTaskCreatePinnedToCore(webOpenHandler, "webOpen", 4096, NULL, 1, &xHandle, 0);
@@ -216,8 +194,12 @@ bool handleFileRead(String path)
     path += "index.html";
   }
   String contentType = getContentType(path);
-  if (exists(path))
+  String pathWithGz = path + ".gz";
+  if (exists(pathWithGz) || exists(path))
   {
+    if (exists(pathWithGz)) {
+      path += ".gz";
+    }
     File file = SPIFFS.open(path, "r");
     _web_server.streamFile(file, contentType);
     file.close();
@@ -234,19 +216,19 @@ void handleFileUpload()
 
   HTTPUpload &upload = _web_server.upload();
   // // ---------------------------------------------
-  // DBG_OUTPUT_PORT.print("upload.filename: ");
-  // DBG_OUTPUT_PORT.println(upload.filename);
-  // DBG_OUTPUT_PORT.print("upload.name: ");
-  // DBG_OUTPUT_PORT.println(upload.name);
-  // DBG_OUTPUT_PORT.print("upload.type: ");
-  // DBG_OUTPUT_PORT.println(upload.type);
-  // DBG_OUTPUT_PORT.print("upload.totalSize: ");
-  // DBG_OUTPUT_PORT.println(upload.totalSize);
-  // DBG_OUTPUT_PORT.print("upload.currentSize: ");
-  // DBG_OUTPUT_PORT.println(upload.currentSize);
+  // Serial.print("upload.filename: ");
+  // Serial.println(upload.filename);
+  // Serial.print("upload.name: ");
+  // Serial.println(upload.name);
+  // Serial.print("upload.type: ");
+  // Serial.println(upload.type);
+  // Serial.print("upload.totalSize: ");
+  // Serial.println(upload.totalSize);
+  // Serial.print("upload.currentSize: ");
+  // Serial.println(upload.currentSize);
   // for (int i = 0; i < upload.currentSize; i++)
   // {
-  //   DBG_OUTPUT_PORT.printf("%c ", upload.buf[i]);
+  //   Serial.printf("%c ", upload.buf[i]);
   // }
   // // ---------------------------------------------
 
@@ -269,7 +251,7 @@ void handleFileUpload()
   }
   else if (upload.status == UPLOAD_FILE_WRITE)
   {
-    //DBG_OUTPUT_PORT.print("handleFileUpload Data: "); DBG_OUTPUT_PORT.println(upload.currentSize);
+    Serial.print("handleFileUpload Data: "); Serial.println(upload.currentSize);
     if (fsUploadFile)
     {
       fsUploadFile.write(upload.buf, upload.currentSize);
@@ -299,11 +281,11 @@ Frame_Receive::Frame_Receive(void)
     _key_exit->Bind(EPDGUI_Button::EVENT_RELEASED, &Frame_Base::exit_cb);
 
     _web_server.serveStatic("/index.html", SPIFFS, "/index.html");
-    _web_server.serveStatic("/favicon.ico", SPIFFS, "/favicon.ico");
-    _web_server.serveStatic("/app.js", SPIFFS, "/app.js");
-    _web_server.serveStatic("/chunk-vendors.css", SPIFFS, "/chunk-vendors.css");
-    _web_server.serveStatic("/chunk-vendors.js", SPIFFS, "/chunk-vendors.js");
-    _web_server.serveStatic("/config.json", SD, "/config.json"); //デバッグ用に
+    // _web_server.serveStatic("/favicon.ico", SPIFFS, "/favicon.ico.gz");
+    // _web_server.serveStatic("/app.js", SPIFFS, "/app.js.gz");
+    // _web_server.serveStatic("/chunk-vendors.css", SPIFFS, "/chunk-vendors.css.gz");
+    // _web_server.serveStatic("/chunk-vendors.js", SPIFFS, "/chunk-vendors.js.gz");
+    // _web_server.serveStatic("/config.json", SD, "/config.json"); //デバッグ用に
 
     _web_server.on(
         "/", HTTP_POST, []() {
@@ -311,9 +293,9 @@ Frame_Receive::Frame_Receive(void)
         String episode = _web_server.arg("episode");
         String subtitle = _web_server.arg("subtitle");
 
-        // DBG_OUTPUT_PORT.println(novelTitle);
-        // DBG_OUTPUT_PORT.println(episode);
-        // DBG_OUTPUT_PORT.println(subtitle);
+        // Serial.println(novelTitle);
+        // Serial.println(episode);
+        // Serial.println(subtitle);
 
         editConfigWriteSubtitle(novelTitle, episode, subtitle);
         editConfigWriteFiles(novelTitle, episode);
