@@ -1,4 +1,5 @@
 #include "frame_novellist.h"
+#include "frame_reader.h"
 #include <ArduinoJson.h>
 
 #define MAX_BTN_NUM 14
@@ -13,7 +14,7 @@ void key_novellist_novel_cb(epdgui_args_vector_t &args)
 
 void key_novellist_episode_cb(epdgui_args_vector_t &args)
 {
-    Frame_Base *frame = new Frame_NovelList(((EPDGUI_Button *)(args[0]))->GetCustomString());
+    Frame_Base *frame = new Frame_Reader(*((String *)args[2]), ((EPDGUI_Button *)(args[0]))->GetCustomString());
     EPDGUI_PushFrame(frame);
     *((int *)(args[1])) = 0;
     log_d("%s", ((EPDGUI_Button *)(args[0]))->GetCustomString().c_str());
@@ -122,6 +123,7 @@ void Frame_NovelList::list()
         }
         else
         {
+            btn->AddArgs(EPDGUI_Button::EVENT_RELEASED, 2, &_novel);
             btn->Bind(EPDGUI_Button::EVENT_RELEASED, key_novellist_episode_cb);
         }
     }
