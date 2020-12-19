@@ -20,6 +20,7 @@ private:
     EPDGUI_Button *_key_prev;
     std::vector<String> _paths;
     int _page;
+    int _page_size;
     bool _page_changed;
 };
 

@@ -106,30 +106,20 @@ bool exists(String path)
   return yes;
 }
 
-void editConfigRemoveEpisode(String title, String episode)
-{
-  DynamicJsonDocument doc(2048);
-  getDJD(doc);
-
-  JsonObject novel = doc[title];
-  novel.remove(episode);
-
-  writeDJD(doc);
-}
-
 void editConfigWriteSubtitle(String title, String episode, String subtitle)
 {
-  DynamicJsonDocument doc(2048);
+  DynamicJsonDocument doc(10*1024);
   getDJD(doc);
 
   doc[title][episode]["subtitle"] = subtitle;
 
   writeDJD(doc);
+  doc.clear();
 }
 
 void editConfigAddFile(String title, String episode, String filename)
 {
-  DynamicJsonDocument doc = DynamicJsonDocument(2048);
+  DynamicJsonDocument doc(10*1024);
   getDJD(doc);
 
   JsonArray files = doc[title][episode]["files"];
@@ -138,11 +128,12 @@ void editConfigAddFile(String title, String episode, String filename)
   files.add("/" + filename);
 
   writeDJD(doc);
+  doc.clear();
 }
 
 void editConfigWriteFiles(String title, String episode)
 {
-  DynamicJsonDocument doc(2048);
+  DynamicJsonDocument doc(5*1024);
   getDJD(doc);
 
   JsonArray files = doc[title][episode].createNestedArray("files");
@@ -153,6 +144,7 @@ void editConfigWriteFiles(String title, String episode)
   }
 
   writeDJD(doc);
+  doc.clear();
 }
 
 void webOpenHandler(void *pvParameter)
@@ -170,10 +162,10 @@ void webOpen()
     Serial.print("AP IP address: ");
     Serial.println(myIP);
 
-    MDNS.begin(host);
-    Serial.print("Open http://");
-    Serial.print(host);
-    Serial.println(".local/");
+    // MDNS.begin(host);
+    // Serial.print("Open http://");
+    // Serial.print(host);
+    // Serial.println(".local/");
 
     _web_server.begin();
     xTaskCreatePinnedToCore(webOpenHandler, "webOpen", 4096, NULL, 1, &xHandle, 0);
@@ -280,12 +272,37 @@ Frame_Receive::Frame_Receive(void)
     _key_exit->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void *)(&_is_run));
     _key_exit->Bind(EPDGUI_Button::EVENT_RELEASED, &Frame_Base::exit_cb);
 
-    _web_server.serveStatic("/index.html", SPIFFS, "/index.html");
+    _web_server.on("/index.html", HTTP_GET, []() {
+      if (!handleFileRead("/index.html")) {
+        _web_server.send(404, "text/plain", "FileNotFound");
+      }
+    });
+    _web_server.on("/favicon.ico", HTTP_GET, []() {
+      if (!handleFileRead("/favicon.ico")) {
+        _web_server.send(404, "text/plain", "FileNotFound");
+      }
+    });
+    _web_server.on("/app.js", HTTP_GET, []() {
+      if (!handleFileRead("/app.js")) {
+        _web_server.send(404, "text/plain", "FileNotFound");
+      }
+    });
+    _web_server.on("/chunk-vendors.css", HTTP_GET, []() {
+      if (!handleFileRead("/chunk-vendors.css")) {
+        _web_server.send(404, "text/plain", "FileNotFound");
+      }
+    });
+    _web_server.on("/chunk-vendors.js", HTTP_GET, []() {
+      if (!handleFileRead("/chunk-vendors.js")) {
+        _web_server.send(404, "text/plain", "FileNotFound");
+      }
+    });
+    // _web_server.serveStatic("/index.html", SPIFFS, "/index.html");
     // _web_server.serveStatic("/favicon.ico", SPIFFS, "/favicon.ico.gz");
     // _web_server.serveStatic("/app.js", SPIFFS, "/app.js.gz");
     // _web_server.serveStatic("/chunk-vendors.css", SPIFFS, "/chunk-vendors.css.gz");
     // _web_server.serveStatic("/chunk-vendors.js", SPIFFS, "/chunk-vendors.js.gz");
-    // _web_server.serveStatic("/config.json", SD, "/config.json"); //デバッグ用に
+    _web_server.serveStatic("/config.json", SD, "/config.json"); //デバッグ用に
 
     _web_server.on(
         "/", HTTP_POST, []() {

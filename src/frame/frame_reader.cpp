@@ -14,7 +14,7 @@ void key_reader_next_cb(epdgui_args_vector_t &args)
     Serial.println(*((int *)args[0]));
     Serial.print("*((int *)args[1]): ");
     Serial.println(*((int *)args[1]));
-    *((int *)args[0]) = std::min(*((int *)args[0]) + 1, 100);
+    *((int *)args[0]) = std::min(*((int *)args[0]) + 1, *((int *)args[1]) - 1);
 }
 
 void key_reader_prev_cb(epdgui_args_vector_t &args)
@@ -44,10 +44,14 @@ Frame_Reader::Frame_Reader(String novel_name, String episode)
     Serial.print("episode: ");
     Serial.println(episode);
 
-    DynamicJsonDocument doc(2048);
+    DynamicJsonDocument doc(5 * 1024);
     getDJD(doc);
 
     _paths = getPagesPath(doc, novel_name, episode);
+
+    _page = 0;
+    _page_size = _paths.size();
+    _page_changed = true;
 
     Serial.print("paths.size(): ");
     Serial.println(_paths.size());
@@ -65,14 +69,13 @@ Frame_Reader::Frame_Reader(String novel_name, String episode)
     _canvas_picture->setTextColor(0);
     _canvas_picture->setTextDatum(CC_DATUM);
 
-    int max = 100;
-    _key_next = new EPDGUI_Button("NEXT", 8, 990 - 72 - 72 / 2, 540 / 2 - 16, 72);
+    _key_next = new EPDGUI_Button("NEXT", 8, 960 - 72 + 8, 540 / 2 - 8 * 2, 72 - 8 * 2);
     _key_next->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, &_page);
-    _key_next->AddArgs(EPDGUI_Button::EVENT_RELEASED, 1, &max);
+    _key_next->AddArgs(EPDGUI_Button::EVENT_RELEASED, 1, &_page_size);
     _key_next->AddArgs(EPDGUI_Button::EVENT_RELEASED, 2, &_page_changed);
     _key_next->Bind(EPDGUI_Button::EVENT_RELEASED, key_reader_next_cb);
 
-    _key_prev = new EPDGUI_Button("PREV", 540 / 2 + 8, 990 - 72 - 72 / 2, 540 / 2 - 16, 72);
+    _key_prev = new EPDGUI_Button("PREV", 540 / 2 + 8, 960 - 72 + 8, 540 / 2 - 8 * 2, 72 - 8 * 2);
     _key_prev->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, &_page);
     _key_prev->AddArgs(EPDGUI_Button::EVENT_RELEASED, 1, &_page_changed);
     _key_prev->Bind(EPDGUI_Button::EVENT_RELEASED, key_reader_prev_cb);
@@ -90,9 +93,6 @@ Frame_Reader::Frame_Reader(String novel_name, String episode)
     {
         exitbtn("Back");
     }
-
-    _page = 0;
-    _page_changed = true;
 
     _key_exit->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void *)(&_is_run));
     _key_exit->Bind(EPDGUI_Button::EVENT_RELEASED, &key_reader_exit_cb);
@@ -113,8 +113,8 @@ void Frame_Reader::err(String info)
 void Frame_Reader::drawPicture()
 {
     LoadingAnime_32x32_Start(254, 500);
- 
-    String title = String(_page) + "/" + String(_paths.size());
+
+    String title = String(_page + 1) + "/" + String(_paths.size());
     _canvas_title->drawString(title, 270, 34);
 
     String draw_path = _paths[_page];
@@ -144,8 +144,9 @@ void Frame_Reader::drawPicture()
         }
     }
     LoadingAnime_32x32_Stop();
-    _canvas_title->pushCanvas(0, 8, UPDATE_MODE_NONE);
+    _canvas_title->pushCanvas(0, 8, UPDATE_MODE_DU);
     _canvas_picture->pushCanvas(0, 72, UPDATE_MODE_GC16);
+    _key_exit->Draw(_canvas_title);
 }
 
 int Frame_Reader::run()
@@ -165,5 +166,8 @@ int Frame_Reader::init(epdgui_args_vector_t &args)
     EPDGUI_AddObject(_key_exit);
     EPDGUI_AddObject(_key_next);
     EPDGUI_AddObject(_key_prev);
+
+    _page_changed = false;
+    drawPicture();
     return 3;
 }

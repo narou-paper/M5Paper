@@ -84,7 +84,7 @@ Frame_NovelList::~Frame_NovelList()
 
 void Frame_NovelList::list()
 {
-    DynamicJsonDocument doc(2048);
+    DynamicJsonDocument doc(5*1024);
     getDJD(doc);
 
     std::vector<String> list = _novel == "" ? getNovels(doc)
@@ -92,7 +92,7 @@ void Frame_NovelList::list()
 
     for (int i = 0; i < list.size(); i++)
     {
-        if (_key_novels.size() > MAX_BTN_NUM)
+        if (_key_novels.size() >= MAX_BTN_NUM)
             break;
         EPDGUI_Button *btn = new EPDGUI_Button(4, 100 + _key_novels.size() * 60, 532, 61);
         _key_novels.push_back(btn);
@@ -133,10 +133,11 @@ int Frame_NovelList::init(epdgui_args_vector_t &arduino_phy_init)
 {
     _is_run = 1;
 
-    if (_key_novels.size() == 0)
-    {
-        list();
+    for(int i=0;i<_key_novels.size();i++){
+        delete _key_novels[i];
+        _key_novels.clear();
     }
+    list();
 
     M5.EPD.WriteFullGram4bpp(GetWallpaper());
     _canvas_title->pushCanvas(0, 8, UPDATE_MODE_NONE);
