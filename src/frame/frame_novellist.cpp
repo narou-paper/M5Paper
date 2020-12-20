@@ -2,7 +2,7 @@
 #include "frame_reader.h"
 #include <ArduinoJson.h>
 
-#define MAX_BTN_NUM 14
+#define MAX_BTN_NUM 13
 
 void key_novellist_novel_cb(epdgui_args_vector_t &args)
 {
@@ -92,7 +92,7 @@ void Frame_NovelList::list()
 
     for (int i = 0; i < list.size(); i++)
     {
-        if (_key_novels.size() >= MAX_BTN_NUM)
+        if (_key_novels.size() > MAX_BTN_NUM)
             break;
         EPDGUI_Button *btn = new EPDGUI_Button(4, 100 + _key_novels.size() * 60, 532, 61);
         _key_novels.push_back(btn);

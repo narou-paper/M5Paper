@@ -12,6 +12,9 @@ public:
     int run();
     void exit();
     int init(epdgui_args_vector_t &args);
+private:
+    void webOpen();
+    void webClose();
 };
 
 #endif //_FRAME_RECEIVE_H_

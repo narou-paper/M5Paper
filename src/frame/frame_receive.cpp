@@ -155,29 +155,6 @@ void webOpenHandler(void *pvParameter)
     }
 }
 
-void webOpen()
-{
-    WiFi.softAP(ssid, password);
-    IPAddress myIP = WiFi.softAPIP();
-    Serial.print("AP IP address: ");
-    Serial.println(myIP);
-
-    // MDNS.begin(host);
-    // Serial.print("Open http://");
-    // Serial.print(host);
-    // Serial.println(".local/");
-
-    _web_server.begin();
-    xTaskCreatePinnedToCore(webOpenHandler, "webOpen", 4096, NULL, 1, &xHandle, 0);
-};
-
-void webClose()
-{
-    _web_server.close();
-    vTaskDelete(xHandle);
-    WiFi.softAPdisconnect(true);
-};
-
 bool handleFileRead(String path)
 {
   Serial.println("handleFileRead: " + path);
@@ -260,6 +237,35 @@ void handleFileUpload()
     Serial.println(upload.totalSize);
   }
 }
+
+void Frame_Receive::webOpen()
+{
+    WiFi.softAP(ssid, password);
+    IPAddress myIP = WiFi.softAPIP();
+    Serial.print("AP IP address: ");
+    Serial.println(myIP);
+
+    // MDNS.begin(host);
+    // Serial.print("Open http://");
+    // Serial.print(host);
+    // Serial.println(".local/");
+
+    String message = "1. Open http://" + myIP.toString();
+    _receive_canvas.drawString(message, 30, 45);
+    message = "2. Upload image files.";
+    _receive_canvas.drawString(message, 30, 100);
+    _receive_canvas.pushCanvas(80, 440, UPDATE_MODE_DU4);
+
+    _web_server.begin();
+    xTaskCreatePinnedToCore(webOpenHandler, "webOpen", 4096, NULL, 1, &xHandle, 0);
+};
+
+void Frame_Receive::webClose()
+{
+    _web_server.close();
+    vTaskDelete(xHandle);
+    WiFi.softAPdisconnect(true);
+};
 
 Frame_Receive::Frame_Receive(void)
 {
@@ -351,13 +357,11 @@ int Frame_Receive::init(epdgui_args_vector_t &args)
 
     M5.EPD.WriteFullGram4bpp(GetWallpaper());
 
-    _receive_canvas.createCanvas(300, 100);
+    _receive_canvas.createCanvas(380, 140);
     _receive_canvas.fillCanvas(15);
     _receive_canvas.setTextSize(26);
     _receive_canvas.setTextColor(0);
-    _receive_canvas.setTextDatum(CC_DATUM);
-    _receive_canvas.drawString("Hello. Send jpg image!", 150, 55);
-    _receive_canvas.pushCanvas(120, 430, UPDATE_MODE_DU4);
+    _receive_canvas.setTextDatum(CL_DATUM);
 
     _canvas_title->pushCanvas(0, 8, UPDATE_MODE_NONE);
 

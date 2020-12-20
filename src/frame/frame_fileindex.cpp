@@ -3,7 +3,7 @@
 #include "frame_pictureviewer.h"
 
 
-#define MAX_BTN_NUM     14
+#define MAX_BTN_NUM     13
 
 void key_fileindex_floder_cb(epdgui_args_vector_t &args)
 {

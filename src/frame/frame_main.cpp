@@ -6,10 +6,10 @@
 
 enum
 {
-    kKeySetting = 0,
-    kKeySDFile,
+    kKeyNovelList = 0,
     kKeyReceive,
-    kKeyNovelList
+    kKeySetting,
+    kKeySDFile,
 };
 
 #define KEY_W 92
@@ -63,38 +63,33 @@ Frame_Main::Frame_Main(void) : Frame_Base(false)
     _bar->createCanvas(540, 44);
     _bar->setTextSize(26);
 
-    _names = new M5EPD_Canvas(&M5.EPD);
-    _names->createCanvas(540, 32);
-    _names->setTextDatum(CC_DATUM);
+    _key[kKeyNovelList] = new EPDGUI_Button("読む", 20, 80, 500, 350);
+    _key[kKeyNovelList]->CanvasNormal()->drawPngFile(SPIFFS, "/1.png");
+    *(_key[kKeyNovelList]->CanvasPressed()) = *(_key[kKeyNovelList]->CanvasNormal());
+    _key[kKeyNovelList]->CanvasPressed()->ReverseColor();
+    _key[kKeyNovelList]->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void *)(&_is_run));
+    _key[kKeyNovelList]->Bind(EPDGUI_Button::EVENT_RELEASED, key_novellist_cb);
 
-    for (int i = 0; i < 4; i++)
-    {
-        _key[i] = new EPDGUI_Button("测试", 20 + i * 136, 90, KEY_W, KEY_H);
-    }
-
-    _key[kKeySetting]->CanvasNormal()->pushImage(0, 0, 92, 92, ImageResource_main_icon_setting_92x92);
-    *(_key[kKeySetting]->CanvasPressed()) = *(_key[kKeySetting]->CanvasNormal());
-    _key[kKeySetting]->CanvasPressed()->ReverseColor();
-    _key[kKeySetting]->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void *)(&_is_run));
-    _key[kKeySetting]->Bind(EPDGUI_Button::EVENT_RELEASED, key_setting_cb);
-
-    _key[kKeySDFile]->CanvasNormal()->pushImage(0, 0, 92, 92, ImageResource_main_icon_sdcard_92x92);
-    *(_key[kKeySDFile]->CanvasPressed()) = *(_key[kKeySDFile]->CanvasNormal());
-    _key[kKeySDFile]->CanvasPressed()->ReverseColor();
-    _key[kKeySDFile]->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void *)(&_is_run));
-    _key[kKeySDFile]->Bind(EPDGUI_Button::EVENT_RELEASED, key_sdfile_cb);
-
-    _key[kKeyReceive]->CanvasNormal()->pushImage(0, 0, 92, 92, ImageResource_main_icon_home_92x92);
+    _key[kKeyReceive] = new EPDGUI_Button("入れる", 20, 450, 500, 350);
+    _key[kKeyReceive]->CanvasNormal()->drawPngFile(SPIFFS, "/2.png");
     *(_key[kKeyReceive]->CanvasPressed()) = *(_key[kKeyReceive]->CanvasNormal());
     _key[kKeyReceive]->CanvasPressed()->ReverseColor();
     _key[kKeyReceive]->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void *)(&_is_run));
     _key[kKeyReceive]->Bind(EPDGUI_Button::EVENT_RELEASED, key_receive_cb);
 
-    _key[kKeyNovelList]->CanvasNormal()->pushImage(0, 0, 92, 92, ImageResource_main_icon_home_92x92);
-    *(_key[kKeyNovelList]->CanvasPressed()) = *(_key[kKeyNovelList]->CanvasNormal());
-    _key[kKeyNovelList]->CanvasPressed()->ReverseColor();
-    _key[kKeyNovelList]->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void *)(&_is_run));
-    _key[kKeyNovelList]->Bind(EPDGUI_Button::EVENT_RELEASED, key_novellist_cb);
+    _key[kKeySetting] = new EPDGUI_Button("設定", 20, 820, 240, 120);
+    _key[kKeySetting]->CanvasNormal()->drawPngFile(SPIFFS, "/3.png");
+    *(_key[kKeySetting]->CanvasPressed()) = *(_key[kKeySetting]->CanvasNormal());
+    _key[kKeySetting]->CanvasPressed()->ReverseColor();
+    _key[kKeySetting]->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void *)(&_is_run));
+    _key[kKeySetting]->Bind(EPDGUI_Button::EVENT_RELEASED, key_setting_cb);
+
+    _key[kKeySDFile] = new EPDGUI_Button("設定", 280, 820, 240, 120);
+    _key[kKeySDFile]->CanvasNormal()->drawPngFile(SPIFFS, "/4.png");
+    *(_key[kKeySDFile]->CanvasPressed()) = *(_key[kKeySDFile]->CanvasNormal());
+    _key[kKeySDFile]->CanvasPressed()->ReverseColor();
+    _key[kKeySDFile]->AddArgs(EPDGUI_Button::EVENT_RELEASED, 0, (void *)(&_is_run));
+    _key[kKeySDFile]->Bind(EPDGUI_Button::EVENT_RELEASED, key_sdfile_cb);
 
     _time = 0;
     _next_update_time = 0;
@@ -106,40 +101,6 @@ Frame_Main::~Frame_Main(void)
     {
         delete _key[i];
     }
-}
-
-void Frame_Main::AppName(m5epd_update_mode_t mode)
-{
-    if (!_names->isRenderExist(20))
-    {
-        _names->createRender(20, 26);
-    }
-    _names->setTextSize(20);
-    _names->fillCanvas(0);
-    uint8_t language = GetLanguage();
-    if (language == LANGUAGE_JA)
-    {
-        _names->drawString("工場テスト", 20 + 46, 16);
-        _names->drawString("メモリー", 20 + 46 + 136, 16);
-        _names->drawString("受信", 20 + 46 + 136 * 2, 16);
-        _names->drawString("小説の一覧", 20 + 46 + 136 * 3, 16);
-    }
-    else if (language == LANGUAGE_ZH)
-    {
-        _names->drawString("出厂测试", 20 + 46, 16);
-        _names->drawString("存储", 20 + 46 + 136, 16);
-        _names->drawString("Receive", 20 + 46 + 136 * 2, 16);
-        _names->drawString("Novel List", 20 + 46 + 136 * 3, 16);
-    }
-    else
-    {
-        _names->drawString("Test", 20 + 46, 16);
-        _names->drawString("Storage", 20 + 46 + 136, 16);
-        _names->drawString("Receive", 20 + 46 + 136 * 2, 16);
-        _names->drawString("Novel List", 20 + 46 + 136 * 3, 16);
-    }
-
-    _names->pushCanvas(0, 186, mode);
 }
 
 void Frame_Main::StatusBar(m5epd_update_mode_t mode)
@@ -199,7 +160,8 @@ void Frame_Main::StatusBar(m5epd_update_mode_t mode)
 int Frame_Main::init(epdgui_args_vector_t &args)
 {
     _is_run = 1;
-    M5.EPD.WriteFullGram4bpp(GetWallpaper());
+    // M5.EPD.WriteFullGram4bpp(GetWallpaper());
+    M5.EPD.Clear();
     for (int i = 0; i < ICON_NUM; i++)
     {
         EPDGUI_AddObject(_key[i]);
@@ -207,7 +169,6 @@ int Frame_Main::init(epdgui_args_vector_t &args)
     _time = 0;
     _next_update_time = 0;
     StatusBar(UPDATE_MODE_NONE);
-    AppName(UPDATE_MODE_NONE);
     return 9;
 }
 

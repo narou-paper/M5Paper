@@ -17,7 +17,6 @@ public:
 private:
     EPDGUI_Button *_key[ICON_NUM];
     M5EPD_Canvas *_bar;
-    M5EPD_Canvas *_names;
     uint32_t _next_update_time;
     uint32_t _time;
 };
