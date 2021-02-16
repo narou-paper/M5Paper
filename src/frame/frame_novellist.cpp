@@ -84,7 +84,7 @@ Frame_NovelList::~Frame_NovelList()
 
 void Frame_NovelList::list()
 {
-    DynamicJsonDocument doc(5*1024);
+    DynamicJsonDocument doc(20*1024);
     getDJD(doc);
 
     std::vector<String> list = _novel == "" ? getNovels(doc)

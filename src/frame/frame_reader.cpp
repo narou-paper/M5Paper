@@ -44,7 +44,7 @@ Frame_Reader::Frame_Reader(String novel_name, String episode)
     Serial.print("episode: ");
     Serial.println(episode);
 
-    DynamicJsonDocument doc(5 * 1024);
+    DynamicJsonDocument doc(20 * 1024);
     getDJD(doc);
 
     _paths = getPagesPath(doc, novel_name, episode);

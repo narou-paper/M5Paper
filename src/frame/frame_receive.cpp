@@ -106,9 +106,35 @@ bool exists(String path)
   return yes;
 }
 
+void editConfigWriteTime(String title, String episode)
+{
+  DynamicJsonDocument doc(20*1024);
+  getDJD(doc);
+
+  rtc_time_t time_struct;
+  rtc_date_t date_struct;
+  M5.RTC.getTime(&time_struct);
+  M5.RTC.getDate(&date_struct);
+  
+  // あたまわるわるポイント
+  // BM8563からunixtimeみたいなのを取れそうになかったから構造体から作る
+  uint32_t t = (date_struct.year-2020)*12;
+  t = (date_struct.mon + t) * 5;
+  t = (date_struct.week + t) * 7;
+  t = (date_struct.day + t) * 24;
+  t = (time_struct.hour + t) * 60;
+  t = (time_struct.min + t) * 60;
+  t = time_struct.sec + t;
+    
+  doc[title][episode]["time"] = t;
+
+  writeDJD(doc);
+  doc.clear();
+}
+
 void editConfigWriteSubtitle(String title, String episode, String subtitle)
 {
-  DynamicJsonDocument doc(10*1024);
+  DynamicJsonDocument doc(20*1024);
   getDJD(doc);
 
   doc[title][episode]["subtitle"] = subtitle;
@@ -119,7 +145,7 @@ void editConfigWriteSubtitle(String title, String episode, String subtitle)
 
 void editConfigAddFile(String title, String episode, String filename)
 {
-  DynamicJsonDocument doc(10*1024);
+  DynamicJsonDocument doc(20*1024);
   getDJD(doc);
 
   JsonArray files = doc[title][episode]["files"];
@@ -133,7 +159,7 @@ void editConfigAddFile(String title, String episode, String filename)
 
 void editConfigWriteFiles(String title, String episode)
 {
-  DynamicJsonDocument doc(5*1024);
+  DynamicJsonDocument doc(20*1024);
   getDJD(doc);
 
   JsonArray files = doc[title][episode].createNestedArray("files");
@@ -321,6 +347,7 @@ Frame_Receive::Frame_Receive(void)
         // Serial.println(subtitle);
 
         editConfigWriteSubtitle(novelTitle, episode, subtitle);
+        editConfigWriteTime(novelTitle, episode);
         editConfigWriteFiles(novelTitle, episode);
         filepaths.clear();
 
