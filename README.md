@@ -4,6 +4,9 @@
 M5Stack公式が公開している[M5Paper_FactoryTest](https://github.com/m5stack/M5Paper_FactoryTest)をベースに作成しています。
 
 # 使い方
+## 前提
+* micro SDカードが必要です。
+
 ## なろうを読む
 1. ホーム画面の「なろうを読む」をタップ
 2. 任意の作品をクリックし、任意の話を選択します
@@ -18,6 +21,7 @@ M5Stack公式が公開している[M5Paper_FactoryTest](https://github.com/m5sta
 4. 「→」アイコンもしくはPlatformIOのタブ上にある「Upload」をクリックします
 5. `data`ディレクトリを作成し、適切なリソースをいれます。リソースのリストは以下に記します(Webのリソースは[こちらのソースコード](https://github.com/narou-paper/M5Paper-Web)をバンドルしてください)
 6. PlatformIOのタブ上にある「Upload Filesystem Image」をクリックします
+7. 必要ならば、sdカードにfont.ttfをいれてください。
 
 | ファイル名   | 利用用途           |
 |:-----------|:-----------------|
@@ -30,4 +34,3 @@ M5Stack公式が公開している[M5Paper_FactoryTest](https://github.com/m5sta
 | 2.png    | ホーム画面のリソース |
 | 3.png    | ホーム画面のリソース |
 | 4.png    | ホーム画面のリソース |
-| font.ttf    | 各所で使うフォント |
