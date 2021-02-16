@@ -106,11 +106,7 @@ bool exists(String path)
   return yes;
 }
 
-void editConfigWriteTime(String title, String episode)
-{
-  DynamicJsonDocument doc(20*1024);
-  getDJD(doc);
-
+unsigned long getUnixtime() {
   rtc_time_t time_struct;
   rtc_date_t date_struct;
   M5.RTC.getTime(&time_struct);
@@ -125,7 +121,15 @@ void editConfigWriteTime(String title, String episode)
   t = (time_struct.hour + t) * 60;
   t = (time_struct.min + t) * 60;
   t = time_struct.sec + t;
-    
+  return t;
+}
+
+void editConfigWriteTime(String title, String episode)
+{
+  DynamicJsonDocument doc(20*1024);
+  getDJD(doc);
+
+  uint32_t t = getUnixtime();
   doc[title][episode]["time"] = t;
 
   writeDJD(doc);
@@ -232,9 +236,7 @@ void handleFileUpload()
     if (novelTitle == "" || episode == "" || subtitle == "")
       _web_server.send(400, "Bad Request");
 
-    String filename = upload.filename;
-    if (!filename.startsWith("/"))
-      filename = "/" + filename;
+    String filename = "/" + String(getUnixtime()) + "_" + upload.filename;
 
     filepaths.push_back(filename);
 

@@ -54,24 +54,65 @@ Frame_NovelList::Frame_NovelList(String novel)
 
 std::vector<String> getNovels(DynamicJsonDocument &doc)
 {
-    std::vector<String> novels;
-    for (JsonPair p : doc.as<JsonObject>())
+    //todo 配列処理がイケてないのでラムダつかっていい感じに（これ書いてるとクソコードでもそれなりに見える説）
+    std::vector<std::pair<String, unsigned long>> novelspair;
+
+    JsonObject novels = doc.as<JsonObject>();
+    for (JsonPair novel : novels)
     {
-        Serial.println(p.key().c_str());
-        novels.push_back(p.key().c_str());
+        JsonObject episodes = novel.value().as<JsonObject>();
+        unsigned long novelmax = 0; //同じ作品の中で最も最近の時刻
+        for (JsonPair episode : episodes)
+        {
+            unsigned long tmp = episode.value()["time"].as<unsigned long>();
+            if (tmp > novelmax)
+                novelmax = tmp;
+        }
+        novelspair.push_back(std::make_pair(novel.key().c_str(), novelmax));
     }
-    return novels;
+
+    std::sort(
+        novelspair.begin(),
+        novelspair.end(),
+        [](std::pair<String, unsigned long> a, std::pair<String, unsigned long> b) {
+            return a.second > b.second;
+        });
+
+    std::vector<String> novelsstring;
+    for (std::pair<String, unsigned long> a : novelspair)
+    {
+        printf("%s, %lu\n", a.first.c_str(), a.second);
+        novelsstring.push_back(a.first);
+    }
+
+    return novelsstring;
 }
 
 std::vector<String> getEpisodes(DynamicJsonDocument &doc, String novelName)
 {
-    std::vector<String> episodes;
+    //todo 配列処理がイケてないのでラムダつかっていい感じに（これ書いてるとクソコードでもそれなりに見える説）
+    std::vector<std::pair<String, unsigned long>> episodes;
     JsonObject novel = doc[novelName];
     for (JsonPair p : novel)
     {
-        episodes.push_back(p.key().c_str());
+        episodes.push_back(std::make_pair(p.key().c_str(), p.value()["time"].as<unsigned long>()));
     }
-    return episodes;
+
+    std::sort(
+        episodes.begin(),
+        episodes.end(),
+        [](std::pair<String, unsigned long> a, std::pair<String, unsigned long> b) {
+            return a.second > b.second;
+        });
+
+    std::vector<String> episodesstring;
+    for (std::pair<String, unsigned long> a : episodes)
+    {
+        printf("%s, %lu\n", a.first.c_str(), a.second);
+        episodesstring.push_back(a.first);
+    }
+
+    return episodesstring;
 }
 
 Frame_NovelList::~Frame_NovelList()
@@ -84,7 +125,7 @@ Frame_NovelList::~Frame_NovelList()
 
 void Frame_NovelList::list()
 {
-    DynamicJsonDocument doc(20*1024);
+    DynamicJsonDocument doc(20 * 1024);
     getDJD(doc);
 
     std::vector<String> list = _novel == "" ? getNovels(doc)
@@ -133,7 +174,8 @@ int Frame_NovelList::init(epdgui_args_vector_t &arduino_phy_init)
 {
     _is_run = 1;
 
-    for(int i=0;i<_key_novels.size();i++){
+    for (int i = 0; i < _key_novels.size(); i++)
+    {
         delete _key_novels[i];
         _key_novels.clear();
     }
