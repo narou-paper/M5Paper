@@ -7,7 +7,7 @@
 #define FORMAT_FILESYSTEM true
 
 const char *ssid = "Narou-Paper";
-const char *password = "mokemoke";
+const char *password = "m5paper";
 const char *host = "narou";
 
 WebServer _web_server(80);
@@ -109,14 +109,21 @@ bool exists(String path)
 unsigned long getUnixtime() {
   rtc_time_t time_struct;
   rtc_date_t date_struct;
+  M5.RTC.getTime();
   M5.RTC.getTime(&time_struct);
   M5.RTC.getDate(&date_struct);
   
   // あたまわるわるポイント
   // BM8563からunixtimeみたいなのを取れそうになかったから構造体から作る
+  printf("date_struct.year = %d\n", date_struct.year);
+  printf("date_struct.mon = %d\n", date_struct.mon);
+  printf("date_struct.week = %d\n", date_struct.week);
+  printf("date_struct.day = %d\n", date_struct.day);
+  printf("time_struct.hour = %d\n", time_struct.hour);
+  printf("time_struct.min = %d\n", time_struct.min);
+  printf("time_struct.sec = %d\n", time_struct.sec);
   uint32_t t = (date_struct.year-2020)*12;
-  t = (date_struct.mon + t) * 5;
-  t = (date_struct.week + t) * 7;
+  t = (date_struct.mon + t) * 31;
   t = (date_struct.day + t) * 24;
   t = (time_struct.hour + t) * 60;
   t = (time_struct.min + t) * 60;
